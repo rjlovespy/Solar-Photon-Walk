@@ -1,12 +1,10 @@
-# Importing necessary libraries
+import matplotlib.animation as ani
 import matplotlib.pyplot as plt
 import numpy as np 
 
 
-# Defining constants and creating Sun's core, radiative zone, convective zone
-r_c, r_rz, r_cz = 15, 35, 50               
-sz_c, sz_rz, sz_cz = 0.2, 0.05, 0.2  
-pd_c, pd_rz, pd_cz = [0.25, 0.25, 0.25, 0.25], [0.25, 0.25, 0.25, 0.25], [0.25, 0.25, 0.25, 0.25]                                       
+r_c, r_rz, r_cz = 3, 7, 10               
+sz_c, sz_rz, sz_cz = 0.20, 0.25, 0.30                                     
 x, y = [0], [0]
 t = np.linspace(0, 2*np.pi, 361)
 x_c, y_c = r_c*np.cos(t), r_c*np.sin(t)
@@ -14,136 +12,91 @@ x_rz, y_rz = r_rz*np.cos(t), r_rz*np.sin(t)
 x_cz, y_cz = r_cz*np.cos(t), r_cz*np.sin(t)
 directions = np.array(["East", "West", "North", "South"])
 
-
-# Assuming that the walk of a gamma ray photon inside the Sun's Core is self-avoiding
-def SAW_Inside_Core(r_max, sz, pd):
-    steps = 0
-    while x[-1]**2 + y[-1]**2 < r_max**2:
-        selection = np.random.choice(directions, p = pd)
-        if selection == "East":
-            x.append(np.round(x[-1] + sz, 2))             
-            y.append(y[-1])
-        elif selection == "West":
-            x.append(np.round(x[-1] - sz, 2))     
-            y.append(y[-1])
-        elif selection == "North":
-            x.append(x[-1])    
-            y.append(np.round(y[-1] + sz, 2))
-        else:
-            x.append(x[-1])    
-            y.append(np.round(y[-1] - sz, 2))
-        
-        while (x[-1] in x[:-1]) and (y[-1] in y[:-1]):
-            del x[-1]
-            del y[-1]
-            selection = np.random.choice(directions, p = pd)
+    
+def SRW():
+    n_c, n_rz, n_cz = 0, 0, 0
+    while x[-1]**2 + y[-1]**2 < r_cz**2:
+        if x[-1]**2 + y[-1]**2 < r_c**2:
+            selection = np.random.choice(directions)
             if selection == "East":
-                x.append(np.round(x[-1] + sz, 2))     
+                x.append(np.round(x[-1] + sz_c, 2))     
                 y.append(y[-1])
             elif selection == "West":
-                x.append(np.round(x[-1] - sz, 2))     
+                x.append(np.round(x[-1] - sz_c, 2))     
                 y.append(y[-1])
             elif selection == "North":
                 x.append(x[-1])     
-                y.append(np.round(y[-1] + sz, 2))
+                y.append(np.round(y[-1] + sz_c, 2))
             else:
                 x.append(x[-1])     
-                y.append(np.round(y[-1] - sz, 2))
-        steps = steps + 1
-    return steps
-n_c = SAW_Inside_Core(r_c, sz_c, pd_c)
-      
-
-# Assuming that the walk of a gamma ray photon inside the Sun's Radiative Zone is simply random    
-def SRW_Inside_Radiative_Zone(r_min, r_max, sz, pd):
-    steps = 0
-    while (x[-1]**2 + y[-1]**2 >= r_min**2) and (x[-1]**2 + y[-1]**2 < r_max**2):
-        selection = np.random.choice(directions, p = pd)
-        if selection == "East":
-            x.append(np.round(x[-1] + sz, 2))     
-            y.append(y[-1])
-        elif selection == "West":
-            x.append(np.round(x[-1] - sz, 2))     
-            y.append(y[-1])
-        elif selection == "North":
-            x.append(x[-1])     
-            y.append(np.round(y[-1] + sz, 2))
+                y.append(np.round(y[-1] - sz_c, 2))
+            n_c = n_c + 1
+        elif (x[-1]**2 + y[-1]**2 >= r_c**2) and (x[-1]**2 + y[-1]**2 < r_rz**2):
+            selection = np.random.choice(directions)
+            if selection == "East":
+                x.append(np.round(x[-1] + sz_rz, 2))     
+                y.append(y[-1])
+            elif selection == "West":
+                x.append(np.round(x[-1] - sz_rz, 2))     
+                y.append(y[-1])
+            elif selection == "North":
+                x.append(x[-1])     
+                y.append(np.round(y[-1] + sz_rz, 2))
+            else:
+                x.append(x[-1])     
+                y.append(np.round(y[-1] - sz_rz, 2))
+            n_rz = n_rz + 1
         else:
-            x.append(x[-1])     
-            y.append(np.round(y[-1] - sz, 2))
-        
-        if (x[-1]**2 + y[-1]**2 < r_min**2):
-            del x[-1]
-            del y[-1]
-            continue
-        
-        if (x[-1]**2 + y[-1]**2 >= r_max**2):
-            lsd_rz=selection
-        
-        steps = steps + 1
-    return steps, lsd_rz
-n_rz, lsd_rz = SRW_Inside_Radiative_Zone(r_c, r_rz, sz_rz, pd_rz)
+            selection = np.random.choice(directions)
+            if selection == "East":
+                x.append(np.round(x[-1] + sz_cz, 2))     
+                y.append(y[-1])
+            elif selection == "West":
+                x.append(np.round(x[-1] - sz_cz, 2))     
+                y.append(y[-1])
+            elif selection == "North":
+                x.append(x[-1])     
+                y.append(np.round(y[-1] + sz_cz, 2))
+            else:
+                x.append(x[-1])     
+                y.append(np.round(y[-1] - sz_cz, 2))
+            n_cz = n_cz + 1
+    return n_c, n_rz, n_cz
+n_c, n_rz, n_cz = SRW()
     
-    
-# Assuming that the walk of a gamma ray photon inside the Sun's Convective Zone is non-reversing   
-def NRRW_Inside_Convective_Zone(r_min, r_max, sz, pd):
-    steps, z = 0, [lsd_rz]
-    while (x[-1]**2 + y[-1]**2 >= r_min**2) and (x[-1]**2 + y[-1]**2 < r_max**2):
-        selection = np.random.choice(directions, p = pd)
-        z.append(selection)
-        while (((z[-2] == "East") and (z[-1] == "West")) or ((z[-2] == "West") and (z[-1] == "East")) or ((z[-2] == "North") and (z[-1] == "South")) or ((z[-2] == "South") and (z[-1] == "North"))):
-            del z[-1]
-            selection = np.random.choice(directions, p = pd)
-            z.append(selection)
-            
-        if selection == "East":
-            x.append(np.round(x[-1] + sz, 2))     
-            y.append(y[-1])
-        elif selection == "West":
-            x.append(np.round(x[-1] - sz, 2))     
-            y.append(y[-1])
-        elif selection == "North":
-            x.append(x[-1])     
-            y.append(np.round(y[-1] + sz, 2))
-        else:
-            x.append(x[-1])     
-            y.append(np.round(y[-1] - sz, 2))
-        
-        if (x[-1]**2 + y[-1]**2 < r_min**2):
-            del x[-1]
-            del y[-1]
-            del z[-1]
-            continue
-        steps = steps + 1
-    return steps
-n_cz = NRRW_Inside_Convective_Zone(r_rz, r_cz, sz_cz, pd_cz)
 
-
-# Calculating total number of steps taken to reach the Sun's photosphere
 n = n_c + n_rz + n_cz
 X = np.array(x)
 Y = np.array(y)
 
 
-# Plotting the walk of a gamma ray photon inside the Sun's interior
 fig=plt.figure()
 ax=fig.add_subplot()
+GRP, = ax.plot(X[0],Y[0], marker="*", mfc="red", mec="red", ms=15, label="Gamma Ray Photon")
+walk, = ax.plot(X[0],Y[0], color="blue")
+
+
+def update(i):
+    GRP.set_data(X[i],Y[i])
+    walk.set_data(X[:i+1],Y[:i+1])
+    return walk, GRP, 
+
+
+anime = ani.FuncAnimation(fig, update, frames=n, interval=10, blit=True, repeat=True)
 ax.plot(x_c, y_c, linestyle=":", color="brown")
 ax.plot(x_rz, y_rz, linestyle=":", color="brown")
 ax.plot(x_cz, y_cz, linestyle=":", color="brown")
-ax.plot(X,Y, color="blue", lw=0.75, alpha=0.75)
-ax.plot(X[-1],Y[-1],marker="*",markerfacecolor="red", markersize=15, label="Gamma Ray Photon")
 fig.suptitle(f"Solar Photon Walk of {n} steps inside the Sun's Interior", color="fuchsia")
 fig.patch.set_facecolor("black")
-fig.tight_layout()
-plt.annotate("Core",(-1.5,-r_c+0.5))
-plt.annotate("Radiative Zone", (-3.5,-r_rz+0.5))
-plt.annotate("Convective Zone", (-4,-r_cz+0.5))
-plt.annotate("Courtesy of Rishikesh Jha",(r_cz-12,-r_cz), color="fuchsia")
-plt.annotate(f"\n Core: {n_c} steps SAW of size {sz_c} units", (-r_cz-1,-r_cz+6), color="fuchsia")
-plt.annotate(f"\n Radiative Zone: {n_rz} steps SRW of size {sz_rz} units", (-r_cz-1,-r_cz+3), color="fuchsia")
-plt.annotate(f"\n Convective Zone: {n_cz} steps NRRW of size {sz_cz} units", (-r_cz-1,-r_cz), color="fuchsia")
-plt.fill(x_cz, y_cz, color="gold")
+ax.annotate("Core",(-0.5,-r_c+0.25))
+ax.annotate("Radiative Zone", (-1,-r_rz+0.25))
+ax.annotate("Convective Zone", (-1.25,-r_cz+0.25))
+ax.annotate("Courtesy of Rishikesh Jha",(r_cz-2.5,-r_cz), color="fuchsia")
+ax.annotate(f"\n Core: {n_c} steps SAW of size {sz_c} units", (-r_cz-1,-r_cz+1), color="fuchsia")
+ax.annotate(f"\n Radiative Zone: {n_rz} steps SRW of size {sz_rz} units", (-r_cz-1,-r_cz+0.5), color="fuchsia")
+ax.annotate(f"\n Convective Zone: {n_cz} steps NRRW of size {sz_cz} units", (-r_cz-1,-r_cz), color="fuchsia")
+ax.fill(x_cz, y_cz, color="gold")
+ax.axis(False)
 plt.legend(loc="best")
-plt.axis(False)
+# anime.save("solar_photon_walk.gif")
 plt.show()
